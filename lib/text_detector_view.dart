@@ -17,6 +17,8 @@ class TextRecognizerView extends StatefulWidget {
     this.textBackgroundPaint,
     this.paintTextStyle,
     required this.onScanText,
+    this.script = TextRecognitionScript.latin,
+    this.showDropdown = true,
   }) : super(key: key);
 
   final double? focusedAreaWidth;
@@ -27,20 +29,27 @@ class TextRecognizerView extends StatefulWidget {
   final Paint? textBackgroundPaint;
   final ui.TextStyle? paintTextStyle;
   final Function? onScanText;
+  final TextRecognitionScript script;
+  final bool showDropdown;
 
   @override
   State<TextRecognizerView> createState() => _TextRecognizerViewState();
 }
 
 class _TextRecognizerViewState extends State<TextRecognizerView> {
-  TextRecognitionScript _script = TextRecognitionScript.latin;
-  TextRecognizer _textRecognizer =
-      TextRecognizer(script: TextRecognitionScript.latin);
+  late TextRecognitionScript _script;
+  late TextRecognizer _textRecognizer;
   bool _canProcess = true;
   bool _isBusy = false;
   CustomPaint? _customPaint;
-  String? _text;
   CameraLensDirection _cameraLensDirection = CameraLensDirection.back;
+
+  @override
+  void initState() {
+    _script = widget.script;
+    _textRecognizer = TextRecognizer(script: _script);
+    super.initState();
+  }
 
   @override
   void dispose() async {
@@ -61,66 +70,66 @@ class _TextRecognizerViewState extends State<TextRecognizerView> {
             onCameraLensDirectionChanged: (value) =>
                 _cameraLensDirection = value,
           ),
-          Positioned(
-            top: 30,
-            left: 100,
-            right: 100,
-            child: Row(
-              children: [
-                Spacer(),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(10.0),
+          if (widget.showDropdown)
+            Positioned(
+              top: 30,
+              left: 100,
+              right: 100,
+              child: Row(
+                children: [
+                  const Spacer(),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: _buildDropdown(),
+                    ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: _buildDropdown(),
-                  ),
-                ),
-                Spacer(),
-              ],
+                  const Spacer(),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildDropdown() => DropdownButton<TextRecognitionScript>(
-        value: _script,
-        icon: const Icon(Icons.arrow_downward),
-        elevation: 16,
-        style: const TextStyle(color: Colors.blue),
-        underline: Container(
-          height: 2,
-          color: Colors.blue,
-        ),
-        onChanged: (TextRecognitionScript? script) {
-          if (script != null) {
-            setState(() {
-              _script = script;
-              _textRecognizer.close();
-              _textRecognizer = TextRecognizer(script: _script);
-            });
-          }
-        },
-        items: TextRecognitionScript.values
-            .map<DropdownMenuItem<TextRecognitionScript>>((script) {
-          return DropdownMenuItem<TextRecognitionScript>(
-            value: script,
-            child: Text(script.name),
-          );
-        }).toList(),
-      );
+  Widget _buildDropdown() {
+    return DropdownButton<TextRecognitionScript>(
+      value: _script,
+      icon: const Icon(Icons.arrow_downward),
+      elevation: 16,
+      style: const TextStyle(color: Colors.blue),
+      underline: Container(
+        height: 2,
+        color: Colors.blue,
+      ),
+      onChanged: (TextRecognitionScript? script) {
+        if (script != null) {
+          setState(() {
+            _script = script;
+            _textRecognizer.close();
+            _textRecognizer = TextRecognizer(script: _script);
+          });
+        }
+      },
+      items: TextRecognitionScript.values
+          .map<DropdownMenuItem<TextRecognitionScript>>((script) {
+        return DropdownMenuItem<TextRecognitionScript>(
+          value: script,
+          child: Text(script.name),
+        );
+      }).toList(),
+    );
+  }
 
   Future<void> _processImage(InputImage inputImage) async {
     if (!_canProcess) return;
     if (_isBusy) return;
     _isBusy = true;
-    setState(() {
-      _text = '';
-    });
     final recognizedText = await _textRecognizer.processImage(inputImage);
     if (inputImage.metadata?.size != null &&
         inputImage.metadata?.rotation != null) {
@@ -140,7 +149,6 @@ class _TextRecognizerViewState extends State<TextRecognizerView> {
       );
       _customPaint = CustomPaint(painter: painter);
     } else {
-      _text = 'Recognized text:\n\n${recognizedText.text}';
       // TODO: set _customPaint to draw boundingRect on top of image
       _customPaint = null;
     }
