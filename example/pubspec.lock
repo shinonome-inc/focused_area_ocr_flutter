@@ -140,8 +140,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "feature/create-package"
-      resolved-ref: "2107bc1ac0fc32ebd87d105661ce1fcbea45a8a8"
+      ref: "feature/focused-area-center"
+      resolved-ref: "0c80ee8316cb7f8f49ede6ceb1e432f6f72d7797"
       url: "https://github.com/shinonome-inc/focused_area_ocr_flutter.git"
     source: git
     version: "0.0.1"
