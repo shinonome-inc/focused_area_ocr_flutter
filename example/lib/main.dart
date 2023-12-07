@@ -56,6 +56,14 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
           ),
+          SizedBox(
+            height: kToolbarHeight,
+            child: AppBar(
+              title: const Text('Focused Area OCR Flutter'),
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+          ),
         ],
       ),
     );
