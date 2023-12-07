@@ -170,9 +170,14 @@ class _CameraViewState extends State<CameraView> {
     if (_controller?.value.isInitialized == false) {
       return const SizedBox.shrink();
     }
-    return CameraPreview(
-      _controller!,
-      child: widget.customPaint,
+    final size = MediaQuery.of(context).size;
+    final deviceRatio = size.width / size.height;
+    return Transform.scale(
+      scale: _controller!.value.aspectRatio / deviceRatio,
+      child: CameraPreview(
+        _controller!,
+        child: widget.customPaint,
+      ),
     );
   }
 }
