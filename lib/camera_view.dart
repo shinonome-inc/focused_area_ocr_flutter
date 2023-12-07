@@ -32,13 +32,6 @@ class _CameraViewState extends State<CameraView> {
   CameraController? _controller;
   int _cameraIndex = -1;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _initialize();
-  }
-
   void _initialize() async {
     if (_cameras.isEmpty) {
       _cameras = await availableCameras();
@@ -52,23 +45,6 @@ class _CameraViewState extends State<CameraView> {
     if (_cameraIndex != -1) {
       _startLiveFeed();
     }
-  }
-
-  @override
-  void dispose() {
-    _stopLiveFeed();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_cameras.isEmpty) return Container();
-    if (_controller == null) return Container();
-    if (_controller?.value.isInitialized == false) return Container();
-    return CameraPreview(
-      _controller!,
-      child: widget.customPaint,
-    );
   }
 
   Future _startLiveFeed() async {
@@ -172,6 +148,31 @@ class _CameraViewState extends State<CameraView> {
         format: format, // used only in iOS
         bytesPerRow: plane.bytesPerRow, // used only in iOS
       ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _stopLiveFeed();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_cameras.isEmpty) return const SizedBox.shrink();
+    if (_controller == null) return const SizedBox.shrink();
+    if (_controller?.value.isInitialized == false) {
+      return const SizedBox.shrink();
+    }
+    return CameraPreview(
+      _controller!,
+      child: widget.customPaint,
     );
   }
 }

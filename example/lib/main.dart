@@ -37,6 +37,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Focused Area OCR Flutter'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
       body: Stack(
         children: [
           TextRecognizerView(
@@ -54,14 +59,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: const TextStyle(color: Colors.white),
                 );
               },
-            ),
-          ),
-          SizedBox(
-            height: kToolbarHeight,
-            child: AppBar(
-              title: const Text('Focused Area OCR Flutter'),
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
             ),
           ),
         ],
