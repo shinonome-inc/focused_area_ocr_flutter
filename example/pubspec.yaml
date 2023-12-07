@@ -30,6 +30,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  camera: ^0.10.5+5
+  focused_area_ocr_flutter:
+    git:
+      url: https://github.com/shinonome-inc/focused_area_ocr_flutter.git
+      ref: feature/create-package
 
 
   # The following adds the Cupertino Icons font to your application.
