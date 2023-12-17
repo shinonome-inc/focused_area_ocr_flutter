@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:focused_area_ocr_flutter/focused_area_ocr_view.dart';
+import 'package:focused_area_ocr_flutter/focused_area_ocr_flutter.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
