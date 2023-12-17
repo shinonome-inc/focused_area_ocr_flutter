@@ -34,8 +34,6 @@ dependencies:
   focused_area_ocr_flutter:
     git:
       url: https://github.com/shinonome-inc/focused_area_ocr_flutter.git
-      ref: feature/focused-area-center
-
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
