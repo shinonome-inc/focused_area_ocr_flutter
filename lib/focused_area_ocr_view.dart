@@ -47,10 +47,10 @@ class FocusedAreaOCRView extends StatefulWidget {
 }
 
 class _FocusedAreaOCRViewState extends State<FocusedAreaOCRView> {
-  late TextRecognitionScript _script;
   late TextRecognizer _textRecognizer;
+  TextRecognitionScript _script = TextRecognitionScript.latin;
   bool _canProcess = true;
-  bool _isBusy = false;
+  bool _isLoading = false;
   CustomPaint? _customPaint;
   final CameraLensDirection _cameraLensDirection = CameraLensDirection.back;
   static List<CameraDescription> _cameras = [];
@@ -58,12 +58,16 @@ class _FocusedAreaOCRViewState extends State<FocusedAreaOCRView> {
   int _cameraIndex = -1;
 
   Future<void> _processImage(InputImage inputImage) async {
-    if (!_canProcess) return;
-    if (_isBusy) return;
-    _isBusy = true;
+    if (!_canProcess || _isLoading) {
+      return;
+    }
+    _isLoading = true;
     final recognizedText = await _textRecognizer.processImage(inputImage);
-    if (inputImage.metadata?.size != null &&
-        inputImage.metadata?.rotation != null) {
+    final bool isEmptyImageMetadata = inputImage.metadata?.size != null &&
+        inputImage.metadata?.rotation != null;
+    if (isEmptyImageMetadata) {
+      _customPaint = null;
+    } else {
       final painter = FocusedAreaOCRPainter(
         recognizedText: recognizedText,
         imageSize: inputImage.metadata!.size,
@@ -80,11 +84,8 @@ class _FocusedAreaOCRViewState extends State<FocusedAreaOCRView> {
         onScanText: widget.onScanText,
       );
       _customPaint = CustomPaint(painter: painter);
-    } else {
-      // TODO: set _customPaint to draw boundingRect on top of image
-      _customPaint = null;
     }
-    _isBusy = false;
+    _isLoading = false;
     if (mounted) {
       setState(() {});
     }
@@ -92,14 +93,13 @@ class _FocusedAreaOCRViewState extends State<FocusedAreaOCRView> {
 
   Future<void> _startLiveFeed() async {
     final camera = _cameras[_cameraIndex];
+    final imageFormatGroup =
+        Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888;
     _controller = CameraController(
       camera,
-      // Set to ResolutionPreset.high. Do NOT set it to ResolutionPreset.max because for some phones does NOT work.
       ResolutionPreset.high,
       enableAudio: false,
-      imageFormatGroup: Platform.isAndroid
-          ? ImageFormatGroup.nv21
-          : ImageFormatGroup.bgra8888,
+      imageFormatGroup: imageFormatGroup,
     );
     _controller?.initialize().then((_) {
       if (!mounted) {
@@ -130,7 +130,9 @@ class _FocusedAreaOCRViewState extends State<FocusedAreaOCRView> {
       cameras: _cameras,
       cameraIndex: _cameraIndex,
     );
-    if (inputImage == null) return;
+    if (inputImage == null) {
+      return;
+    }
     _processImage(inputImage);
   }
 
@@ -167,9 +169,10 @@ class _FocusedAreaOCRViewState extends State<FocusedAreaOCRView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_cameras.isEmpty) return const SizedBox.shrink();
-    if (_controller == null) return const SizedBox.shrink();
-    if (_controller?.value.isInitialized == false) {
+    final bool isNotInitialized = _cameras.isEmpty ||
+        _controller == null ||
+        _controller?.value.isInitialized == false;
+    if (isNotInitialized) {
       return const SizedBox.shrink();
     }
     return CameraPreview(
