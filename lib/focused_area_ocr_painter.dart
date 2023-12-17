@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:focused_area_ocr_flutter/coordinates_translator.dart';
+import 'package:focused_area_ocr_flutter/coordinate_util.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 class FocusedAreaOCRPainter extends CustomPainter {
@@ -37,23 +37,6 @@ class FocusedAreaOCRPainter extends CustomPainter {
   final ui.TextStyle? uiTextStyle;
   final Function? onScanText;
 
-  bool hasPointInRange(RRect focusedRRect, Rect textRect) {
-    // ポイントのX座標が指定範囲内に収まっているかどうか確認する。
-    final double minX = focusedRRect.left;
-    final double maxX = focusedRRect.right;
-    if (textRect.left < minX || textRect.right > maxX) {
-      return false;
-    }
-    // ポイントのY座標が指定範囲内に収まっているかどうか確認する。
-    final double minY = focusedRRect.top;
-    final double maxY = focusedRRect.bottom;
-    if (textRect.top < minY || textRect.bottom > maxY) {
-      return false;
-    }
-    return true;
-  }
-
-  /// Draw focused area
   void _drawFocusedArea(Canvas canvas, RRect focusedRRect) {
     final Paint defaultPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -65,7 +48,6 @@ class FocusedAreaOCRPainter extends CustomPainter {
     );
   }
 
-  /// draw unfocused area
   void _drawUnfocusedArea(Canvas canvas, Size size, RRect focusedRRect) {
     final Offset deviceCenter = Offset(size.width / 2, size.height / 2);
     final Rect deviceRect = Rect.fromCenter(
@@ -107,19 +89,19 @@ class FocusedAreaOCRPainter extends CustomPainter {
   void _drawTextBackground(Canvas canvas, TextBlock textBlock, Size size) {
     final List<Offset> cornerPoints = <Offset>[];
     for (final point in textBlock.cornerPoints) {
-      final double x = translateX(
-        point.x.toDouble(),
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
+      final double x = CoordinateUtil.translateX(
+        x: point.x.toDouble(),
+        canvasSize: size,
+        imageSize: imageSize,
+        rotation: rotation,
+        cameraLensDirection: cameraLensDirection,
       );
-      final double y = translateY(
-        point.y.toDouble(),
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
+      final double y = CoordinateUtil.translateY(
+        y: point.y.toDouble(),
+        canvasSize: size,
+        imageSize: imageSize,
+        rotation: rotation,
+        cameraLensDirection: cameraLensDirection,
       );
       cornerPoints.add(Offset(x, y));
     }
@@ -151,38 +133,40 @@ class FocusedAreaOCRPainter extends CustomPainter {
     _drawFocusedArea(canvas, focusedRRect);
 
     for (final textBlock in recognizedText.blocks) {
-      final double textLeft = translateX(
-        textBlock.boundingBox.left,
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
+      final double textLeft = CoordinateUtil.translateX(
+        x: textBlock.boundingBox.left,
+        canvasSize: size,
+        imageSize: imageSize,
+        rotation: rotation,
+        cameraLensDirection: cameraLensDirection,
       );
-      final double textTop = translateY(
-        textBlock.boundingBox.top,
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
+      final double textTop = CoordinateUtil.translateY(
+        y: textBlock.boundingBox.top,
+        canvasSize: size,
+        imageSize: imageSize,
+        rotation: rotation,
+        cameraLensDirection: cameraLensDirection,
       );
-      final double textRight = translateX(
-        textBlock.boundingBox.right,
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
+      final double textRight = CoordinateUtil.translateX(
+        x: textBlock.boundingBox.right,
+        canvasSize: size,
+        imageSize: imageSize,
+        rotation: rotation,
+        cameraLensDirection: cameraLensDirection,
       );
-      final double textBottom = translateX(
-        textBlock.boundingBox.bottom,
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
+      final double textBottom = CoordinateUtil.translateY(
+        y: textBlock.boundingBox.bottom,
+        canvasSize: size,
+        imageSize: imageSize,
+        rotation: rotation,
+        cameraLensDirection: cameraLensDirection,
       );
       final Rect textRect =
           Rect.fromLTRB(textLeft, textTop, textRight, textBottom);
 
-      if (hasPointInRange(focusedRRect, textRect)) {
+      final bool hasPointInRange =
+          CoordinateUtil.hasPointInRange(focusedRRect, textRect);
+      if (hasPointInRange) {
         _drawTextBackground(canvas, textBlock, size);
         _drawText(canvas, textBlock, textRect);
         if (onScanText != null) {
