@@ -46,13 +46,11 @@ class CoordinateUtil {
   }
 
   static bool hasPointInRange(RRect focusedRRect, Rect textRect) {
-    // ポイントのX座標が指定範囲内に収まっているかどうか確認する。
     final double minX = focusedRRect.left;
     final double maxX = focusedRRect.right;
     if (textRect.left < minX || textRect.right > maxX) {
       return false;
     }
-    // ポイントのY座標が指定範囲内に収まっているかどうか確認する。
     final double minY = focusedRRect.top;
     final double maxY = focusedRRect.bottom;
     if (textRect.top < minY || textRect.bottom > maxY) {
