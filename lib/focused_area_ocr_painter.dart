@@ -37,7 +37,6 @@ class FocusedAreaOCRPainter extends CustomPainter {
   final ui.TextStyle? uiTextStyle;
   final Function? onScanText;
 
-  /// Draw focused area
   void _drawFocusedArea(Canvas canvas, RRect focusedRRect) {
     final Paint defaultPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -49,7 +48,6 @@ class FocusedAreaOCRPainter extends CustomPainter {
     );
   }
 
-  /// draw unfocused area
   void _drawUnfocusedArea(Canvas canvas, Size size, RRect focusedRRect) {
     final Offset deviceCenter = Offset(size.width / 2, size.height / 2);
     final Rect deviceRect = Rect.fromCenter(
