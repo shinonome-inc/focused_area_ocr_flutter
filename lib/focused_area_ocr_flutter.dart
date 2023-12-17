@@ -65,7 +65,6 @@ class _FocusedAreaOCRViewState extends State<FocusedAreaOCRView> {
     final recognizedText = await _textRecognizer.processImage(inputImage);
     final bool isEmptyImageMetadata = inputImage.metadata?.size != null &&
         inputImage.metadata?.rotation != null;
-    print('isEmptyImageMetadata: $isEmptyImageMetadata');
     if (isEmptyImageMetadata) {
       _customPaint = null;
     } else {
