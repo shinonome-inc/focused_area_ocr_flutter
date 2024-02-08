@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:focused_area_ocr_flutter/focused_area_ocr_painter.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
@@ -25,6 +26,7 @@ class FocusedAreaOCRView extends StatefulWidget {
     this.onCameraFeedReady,
     this.onDetectorViewModeChanged,
     this.onCameraLensDirectionChanged,
+    this.orientation,
   }) : super(key: key);
 
   final double? focusedAreaWidth;
@@ -41,6 +43,7 @@ class FocusedAreaOCRView extends StatefulWidget {
   final VoidCallback? onCameraFeedReady;
   final VoidCallback? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
+  final DeviceOrientation? orientation;
 
   @override
   State<FocusedAreaOCRView> createState() => _FocusedAreaOCRViewState();
@@ -101,20 +104,19 @@ class _FocusedAreaOCRViewState extends State<FocusedAreaOCRView> {
       enableAudio: false,
       imageFormatGroup: imageFormatGroup,
     );
-    _controller?.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      _controller?.startImageStream(_processCameraImage).then((value) {
-        if (widget.onCameraFeedReady != null) {
-          widget.onCameraFeedReady!();
-        }
-        if (widget.onCameraLensDirectionChanged != null) {
-          widget.onCameraLensDirectionChanged!(camera.lensDirection);
-        }
-      });
-      setState(() {});
-    });
+    await _controller?.initialize();
+    await _controller?.lockCaptureOrientation(widget.orientation);
+    if (!mounted) {
+      return;
+    }
+    await _controller?.startImageStream(_processCameraImage);
+    if (widget.onCameraFeedReady != null) {
+      widget.onCameraFeedReady!();
+    }
+    if (widget.onCameraLensDirectionChanged != null) {
+      widget.onCameraLensDirectionChanged!(camera.lensDirection);
+    }
+    setState(() {});
   }
 
   Future<void> _stopLiveFeed() async {
