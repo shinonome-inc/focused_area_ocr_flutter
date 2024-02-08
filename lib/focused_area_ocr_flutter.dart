@@ -109,14 +109,13 @@ class _FocusedAreaOCRViewState extends State<FocusedAreaOCRView> {
     if (!mounted) {
       return;
     }
-    _controller?.startImageStream(_processCameraImage).then((value) {
-      if (widget.onCameraFeedReady != null) {
-        widget.onCameraFeedReady!();
-      }
-      if (widget.onCameraLensDirectionChanged != null) {
-        widget.onCameraLensDirectionChanged!(camera.lensDirection);
-      }
-    });
+    await _controller?.startImageStream(_processCameraImage);
+    if (widget.onCameraFeedReady != null) {
+      widget.onCameraFeedReady!();
+    }
+    if (widget.onCameraLensDirectionChanged != null) {
+      widget.onCameraLensDirectionChanged!(camera.lensDirection);
+    }
     setState(() {});
   }
 
